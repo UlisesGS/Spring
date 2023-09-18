@@ -1,0 +1,3 @@
+INSERT INTO users ( email, password, username) VALUES('ulises@gmail.com', '$2a$10$DOMDxjYyfZ/e7RcBfUpzqeaCs8pLgcizuiQWXPkU35nOhZlFcE9MS', 'ulisesss')
+INSERT INTO users ( email, password, username) VALUES('ezequiel@gmail.com', '$2a$10$DOMDxjYyfZ/e7RcBfUpzqeaCs8pLgcizuiQWXPkU35nOhZlFcE9MS', 'ezequielll');
+INSERT INTO users ( email, password, username) VALUES('azul@gmail.com', '$2a$10$DOMDxjYyfZ/e7RcBfUpzqeaCs8pLgcizuiQWXPkU35nOhZlFcE9MS', 'azulllll');

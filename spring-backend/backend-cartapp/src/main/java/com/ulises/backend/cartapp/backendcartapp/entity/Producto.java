@@ -22,6 +22,8 @@ public class Producto {
 
     private String description;
 
+    private String foto;
+
     private Long price;
     
 }

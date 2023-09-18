@@ -2,6 +2,8 @@ package com.ulises.backend.usersapp.demo.auth.filters;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ulises.backend.usersapp.demo.entity.User;
+import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.Jwts;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -10,14 +12,14 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import static com.ulises.backend.usersapp.demo.auth.TokenJwtConfig.*;
 
 import java.io.IOException;
-import java.util.Base64;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
-public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilter {
+public class  JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilter {
 
 
     private AuthenticationManager authenticationManager;
@@ -27,7 +29,8 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
     }
 
     @Override/*SE HACE EL LOGIN*/
-    public Authentication attemptAuthentication(HttpServletRequest request, HttpServletResponse response) throws AuthenticationException {
+    public Authentication attemptAuthentication(HttpServletRequest request, HttpServletResponse response)
+            throws AuthenticationException {
 
         User user = null;
         String username = null;
@@ -48,17 +51,29 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
     }
 
     @Override/*SI SALE BIEN, UNA RESPUESTA*/
-    protected void successfulAuthentication(HttpServletRequest request, HttpServletResponse response, FilterChain chain, Authentication authResult) throws IOException, ServletException {
+    protected void successfulAuthentication(HttpServletRequest request, HttpServletResponse response, FilterChain chain, Authentication authResult)
+            throws IOException, ServletException {
+
                                             /*CASTEAMOS AL USER DE SPRING SECURITY*/
         String username = ((org.springframework.security.core.userdetails.User) authResult.getPrincipal())
                 .getUsername();
-                                        /*IMPORTANTE EL . DEL FINAL*/
-        String originalInput = "algun_token_con_alguna_frase_secreta." + username;
 
-                                                            /*LO CONVERTIMOS A UN ARREGLO DE BYTES, YA QUE ES LO QUE RECIBE encodeToString*/
-        String token = Base64.getEncoder().encodeToString(originalInput.getBytes());
+        Collection<? extends GrantedAuthority> roles = authResult.getAuthorities();
 
-        response.addHeader("Authorization", "Bearer " + token);
+        boolean isAdmin = roles.stream().anyMatch(r -> r.getAuthority().equals("ROLE_ADMIN"));
+
+        Claims claims= Jwts.claims();/* ObjectMapper CONVIERTE UN JSON A UN OBJETO  */
+        claims.put("authorities", new ObjectMapper().writeValueAsString(roles));
+        claims.put("isAdmin", isAdmin);
+
+        String token = Jwts.builder()
+                       .setClaims(claims)
+                       .setSubject(username)
+                       .signWith(SECRET_KEY)
+                       .setIssuedAt(new Date()).setExpiration(new Date(new Date().getTime() + 3600000))/*FECHA DE EXPIRACION DEL TOKEN EN MILISEGUNDOS*/
+                       .compact();
+
+        response.addHeader( HEADER_AUTHORIZATION, PREFIX_TOKEN + token);
 
         Map<String, Object> body = new HashMap<>();
         body.put("token", token);
@@ -72,7 +87,8 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
 
 
     @Override/*SI SALE MAL, UNA RESPUESTA*/
-    protected void unsuccessfulAuthentication(HttpServletRequest request, HttpServletResponse response, AuthenticationException failed) throws IOException, ServletException {
+    protected void unsuccessfulAuthentication(HttpServletRequest request, HttpServletResponse response, AuthenticationException failed)
+            throws IOException, ServletException {
 
         Map<String, Object> body = new HashMap<>();
 

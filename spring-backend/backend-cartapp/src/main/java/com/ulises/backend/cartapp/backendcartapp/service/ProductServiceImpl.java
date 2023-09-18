@@ -1,6 +1,7 @@
 package com.ulises.backend.cartapp.backendcartapp.service;
 
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -20,5 +21,17 @@ public class ProductServiceImpl implements ProductService{
     public List<Producto> findAll() {
         return (List<Producto>)productRepository.findAll();
     }
-    
+
+    @Override
+    public Optional<Producto> findById(Long id) {
+        return productRepository.findById(id);
+    }
+
+    @Override
+    public Producto save(Producto usuario) {
+    /*Rol rol = rolRepositorio.findByNombre("ROLE_USER");
+    usuario.setRoles(Arrays.asList(rol));*/
+        return productRepository.save(usuario);
+    }
+
 }

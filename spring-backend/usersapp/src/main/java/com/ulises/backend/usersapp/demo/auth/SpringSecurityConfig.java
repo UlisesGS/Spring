@@ -1,6 +1,7 @@
 package com.ulises.backend.usersapp.demo.auth;
 
 import com.ulises.backend.usersapp.demo.auth.filters.JwtAuthenticationFilter;
+import com.ulises.backend.usersapp.demo.auth.filters.JwtValidationFilter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -37,6 +38,7 @@ public class SpringSecurityConfig {
                 .anyRequest().authenticated()/*CUALQUIER OTRO METODO QUE NO SEA EL DE LA LINEA 16 NECESITA AUTENTICACION*/
                 .and()/*PARA PONBER OTRO TIPO DE CONFIG*/
                 .addFilter(new JwtAuthenticationFilter(authenticationConfiguration.getAuthenticationManager()))
+                .addFilter(new JwtValidationFilter(authenticationConfiguration.getAuthenticationManager()))
                 .csrf(config -> config.disable())/*CSRF (Cross-Site Request Forgery), SE UTILIZA CUANDO USAMOS SPRING CON VISTAS, LO TENEMOS QUE DESACTIVAR*/
                 .sessionManagement(managment -> managment.sessionCreationPolicy(SessionCreationPolicy.STATELESS))/*LA SESSION STORAGE SE UTILIZA DEL FRONT, NO VAMOS A MANEJAR LA SESION CON ESTADO, LO VAMOS A ENVIAR CON EL TOKEN*/
                 .build();
